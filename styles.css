@@ -1,0 +1,182 @@
+import React, { useMemo, useState } from "react";
+import { createRoot } from "react-dom/client";
+import { motion } from "framer-motion";
+import { Bot, Search, BookOpen, Rocket, Atom, Telescope, Globe2, Sparkles, ExternalLink, Mail, Github, Linkedin, Languages, ShieldCheck, User, CalendarDays, Filter, Send, Download, Orbit } from "lucide-react";
+import "./styles.css";
+
+const fields = ["Physics", "Astronomy", "Astrophysics", "Space Science", "Cosmology", "Quantum Physics"];
+const researchTypes = ["Research Paper", "Review Article", "Preprint", "Student Work", "Research Summary"];
+const summaryTypes = ["Short Summary", "Detailed Academic Summary", "Bullet Points", "Literature Review Style", "Comparison Table", "Research Gaps", "Future Directions"];
+
+const articles = [
+  { title: "Why Space Science Starts with Curiosity", author: "Zero Editorial", bio: "Science communication note for early learners and enthusiasts.", date: "Coming soon" },
+  { title: "How to Read a Physics Paper", author: "Zero Editorial", bio: "A practical guide for students beginning scientific research.", date: "Coming soon" },
+  { title: "Preprints and Peer Review", author: "Zero Editorial", bio: "A short explanation of research credibility and publication stages.", date: "Coming soon" },
+];
+
+const researchItems = [
+  {
+    title: "Recent Advances in Gravitational Wave Detection",
+    authors: "Curated by Zero",
+    field: "Astrophysics",
+    type: "Research Summary",
+    abstract: "A structured entry covering detector sensitivity, signal analysis, and multimessenger astronomy.",
+    keywords: "gravitational waves, LIGO, Virgo, KAGRA, multimessenger astronomy",
+    source: "DOI / arXiv / Source link placeholder",
+    status: "Under Review",
+    summary: "This placeholder demonstrates how reviewed research contributions will appear after curation and verification.",
+    apa: "Author, A. A. (Year). Title of the work. Journal/Source.",
+    vancouver: "Author AA. Title of the work. Journal/Source. Year."
+  },
+  {
+    title: "Dark Matter Detection: Pathways and Open Questions",
+    authors: "Curated by Zero",
+    field: "Cosmology",
+    type: "Review Article",
+    abstract: "A review-style entry covering direct detection, indirect detection, collider searches, and theoretical constraints.",
+    keywords: "dark matter, direct detection, cosmology, particle physics",
+    source: "DOI / arXiv / Source link placeholder",
+    status: "Revision Required",
+    summary: "This card illustrates the documentation fields used before final verification and publication.",
+    apa: "Author, A. A. (Year). Title of the work. Journal/Source.",
+    vancouver: "Author AA. Title of the work. Journal/Source. Year."
+  }
+];
+
+const resources = [
+  ["Google Gemini", "External AI assistant for fast scientific exploration. Use it to generate search directions, summaries, and source suggestions, then verify from original journals and institutions.", "https://gemini.google.com/"],
+  ["arXiv", "Open preprint repository for physics, astronomy, mathematics, and related fields.", "https://arxiv.org/"],
+  ["NASA", "Official space agency resources, missions, discoveries, and scientific updates.", "https://www.nasa.gov/"],
+  ["NASA ADS", "Astrophysics Data System for astronomy and astrophysics literature search.", "https://ui.adsabs.harvard.edu/"],
+  ["Semantic Scholar", "Academic search engine for papers, authors, citations, and summaries.", "https://www.semanticscholar.org/"],
+  ["OpenAlex", "Open index of scholarly works, authors, institutions, sources, and concepts.", "https://openalex.org/"],
+  ["Nature Physics", "High-impact physics journal publishing research, reviews, and commentary.", "https://www.nature.com/nphys/"]
+];
+
+function Stars() {
+  return <div className="stars-bg">
+    <div className="stars-layer" />
+    <div className="glow glow-top" />
+    <div className="glow glow-bottom" />
+  </div>;
+}
+
+function Glass({ children, className = "" }) {
+  return <div className={`glass ${className}`}>{children}</div>;
+}
+
+function Button({ children, variant = "primary", onClick, href }) {
+  const className = `btn ${variant === "outline" ? "btn-outline" : "btn-primary"}`;
+  if (href) return <a className={className} href={href} target="_blank" rel="noreferrer">{children}</a>;
+  return <button className={className} onClick={onClick}>{children}</button>;
+}
+
+function Title({ eyebrow, title, subtitle }) {
+  return <div className="section-title">
+    <p className="eyebrow">{eyebrow}</p>
+    <h2>{title}</h2>
+    {subtitle && <p className="subtitle">{subtitle}</p>}
+  </div>;
+}
+
+function Header() {
+  const nav = ["Home", "Zero AI", "Research Explorer", "Articles", "Research", "Resources", "About", "Contact"];
+  const go = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  return <header className="header">
+    <div className="header-inner">
+      <button onClick={() => go("home")} className="brand">
+        <div className="logo">0</div>
+        <span>Zero</span>
+      </button>
+      <nav className="nav">
+        {nav.map(n => <button key={n} onClick={() => go(n.toLowerCase().replaceAll(" ", "-"))}>{n}</button>)}
+      </nav>
+      <button onClick={() => go("zero-ai")} className="ask-btn">Ask Zero</button>
+    </div>
+  </header>;
+}
+
+function Home() {
+  return <section id="home" className="home section-pad">
+    <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="home-content">
+      <motion.div animate={{ rotate: 360 }} transition={{ duration: 35, repeat: Infinity, ease: "linear" }} className="main-logo">
+        <span>0</span>
+      </motion.div>
+      <h1>Zero</h1>
+      <p className="welcome">Welcome to Zero</p>
+      <p className="home-text">A dark-space science hub for physics, astronomy, research, and AI-assisted scientific exploration.</p>
+      <div className="hero-actions">
+        <Button onClick={() => document.getElementById("zero-ai")?.scrollIntoView({ behavior: "smooth" })}>Ask Zero AI <Bot size={16} /></Button>
+        <Button variant="outline" onClick={() => document.getElementById("research-explorer")?.scrollIntoView({ behavior: "smooth" })}>Explore Research <Search size={16} /></Button>
+      </div>
+    </motion.div>
+  </section>;
+}
+
+function ZeroAI() {
+  const [mode, setMode] = useState("Chatbot");
+  const [query, setQuery] = useState("");
+  const [field, setField] = useState("Physics");
+  const [summary, setSummary] = useState("Detailed Academic Summary");
+  const links = useMemo(() => {
+    const q = encodeURIComponent(query || `${field} latest research`);
+    const geminiPrompt = encodeURIComponent(`Act as a professional scientific research assistant. Search and summarize recent credible sources from universities, journals, space agencies, and research centers about: ${query || field}. Return paper titles, authors, dates, source links, key findings, research gaps, and APA/Vancouver citations. Clearly separate peer-reviewed papers, preprints, official institution pages, and expert opinions.`);
+    return [
+      ["Ask Gemini", `https://gemini.google.com/app?q=${geminiPrompt}`],
+      ["Search arXiv", `https://arxiv.org/search/?query=${q}&searchtype=all`],
+      ["Search NASA ADS", `https://ui.adsabs.harvard.edu/search/q=${q}`],
+      ["Search Semantic Scholar", `https://www.semanticscholar.org/search?q=${q}`],
+      ["Search Google Scholar", `https://scholar.google.com/scholar?q=${q}`],
+    ];
+  }, [query, field]);
+
+  return <section id="zero-ai" className="section-pad"><div className="container">
+    <Title eyebrow="AI Research Assistant" title="Ask, research, and summarize with Zero AI" subtitle="A professional interface for scientific questions, deep literature discovery, and structured academic summaries." />
+    <div className="two-col">
+      <Glass><div className="card-heading"><Bot color="#67e8f9" /><h3>Zero AI Modes</h3></div>
+        {[["Chatbot", "Fast scientific answers and concept explanation."], ["Deep Research", "Academic search workflow for recent papers and credible sources."], ["Generate Summary", "Convert findings into summaries, reviews, tables, gaps, or future directions."]].map(([m,d]) => <button key={m} onClick={() => setMode(m)} className={`mode-btn ${mode===m ? "active" : ""}`}><span>{m}</span><p>{d}</p></button>)}
+        <div className="notice"><ShieldCheck size={20} />This interface prepares the academic workflow. For the fast version, Zero can send structured prompts to Gemini and trusted research gateways. For a fully integrated version, live AI and paper retrieval can be added later using APIs and a backend.</div>
+      </Glass>
+      <Glass><div className="ai-head"><div><h3>{mode}</h3><p>For physics, astronomy, astrophysics, space science, cosmology, and quantum physics.</p></div><button className="lang-btn"><Languages size={16} /> Arabic Toggle</button></div>
+        <div className="form-grid"><label>Research Field<select value={field} onChange={e=>setField(e.target.value)}>{fields.map(f=><option key={f}>{f}</option>)}</select></label><label>Summary Type<select value={summary} onChange={e=>setSummary(e.target.value)}>{summaryTypes.map(s=><option key={s}>{s}</option>)}</select></label></div>
+        <label className="text-label">Ask or search topic<textarea value={query} onChange={e=>setQuery(e.target.value)} placeholder="Example: recent advances in gravitational wave detection from 2024 to 2026" /></label>
+        <div className="hero-actions left"><Button>Run {mode} <Send size={16} /></Button><Button variant="outline" onClick={() => setQuery("")}>Clear</Button></div>
+        <div className="shortcuts"><div className="shortcut-title"><Sparkles size={20} /><span>Research shortcuts</span></div><p>Use Gemini for fast assisted searching, and use the academic gateways below to verify the original sources. Later, Zero can fetch and summarize results directly inside the site.</p><div className="link-grid">{links.map(([name,url])=><a key={name} href={url} target="_blank" rel="noreferrer">{name} <ExternalLink size={14} /></a>)}</div></div>
+      </Glass>
+    </div>
+  </div></section>;
+}
+
+function Explorer() {
+  const icons = [Atom, Telescope, Orbit, Rocket, Globe2, Sparkles];
+  return <section id="research-explorer" className="section-pad"><div className="container"><Title eyebrow="Research Explorer" title="Search credible scientific knowledge" subtitle="Explore recent work in six core domains and move quickly toward papers, summaries, citations, and evidence-based insights." /><div className="grid-3">{fields.map((f,i)=>{const Icon=icons[i];return <Glass key={f} className="hover-card"><Icon className="icon" /><h3>{f}</h3><p>Discover papers, concepts, reviews, and scientific updates related to {f.toLowerCase()}.</p><a className="text-link" href={`https://scholar.google.com/scholar?q=${encodeURIComponent(f+" recent research")}`} target="_blank" rel="noreferrer">Search field <ExternalLink size={16} /></a></Glass>})}</div></div></section>;
+}
+
+function Articles() {
+  return <section id="articles" className="section-pad"><div className="container"><Title eyebrow="Articles" title="Scientific articles and explanations" subtitle="A simple space for educational articles, science notes, and curated explanations." /><div className="grid-3">{articles.map(a=><Glass key={a.title}><BookOpen className="icon" /><h3>{a.title}</h3><div className="meta"><p><User size={16} />{a.author}</p><p>{a.bio}</p><p><CalendarDays size={16} />{a.date}</p></div></Glass>)}</div></div></section>;
+}
+
+function Research() {
+  const [field, setField] = useState("All");
+  const [type, setType] = useState("All");
+  const filtered = researchItems.filter(x => (field==="All"||x.field===field) && (type==="All"||x.type===type));
+  return <section id="research" className="section-pad"><div className="container"><Title eyebrow="Reviewed Research" title="Documented research contributions" subtitle="Founder-published and user-submitted research entries with review status, source links, summaries, and citations." /><Glass className="filters"><div><Filter color="#67e8f9" /><span>Filter research by field and type</span></div><div className="filter-controls"><select value={field} onChange={e=>setField(e.target.value)}><option>All</option>{fields.map(f=><option key={f}>{f}</option>)}</select><select value={type} onChange={e=>setType(e.target.value)}><option>All</option>{researchTypes.map(t=><option key={t}>{t}</option>)}</select></div></Glass><div className="grid-2">{filtered.map(p=><Glass key={p.title}><div className="chips"><span>{p.field}</span><span>{p.type}</span><span>{p.status}</span></div><h3>{p.title}</h3><p className="muted">Authors: {p.authors}</p><div className="research-text"><p><b>Abstract:</b> {p.abstract}</p><p><b>Keywords:</b> {p.keywords}</p><p><b>Source:</b> {p.source}</p><p><b>Summary:</b> {p.summary}</p><div className="citation"><p><b>Citation</b></p><p><span>APA:</span> {p.apa}</p><p><span>Vancouver:</span> {p.vancouver}</p></div></div><div className="hero-actions left"><Button>Read Full Paper <ExternalLink size={16} /></Button><Button variant="outline">Download <Download size={16} /></Button></div></Glass>)}</div></div></section>;
+}
+
+function Resources() {
+  return <section id="resources" className="section-pad"><div className="container"><Title eyebrow="Resources" title="Trusted scientific gateways" subtitle="A curated set of research platforms, space agencies, and academic sources for scientific exploration." /><div className="grid-3">{resources.map(([name,desc,url])=><Glass key={name}><Globe2 className="icon" /><h3>{name}</h3><p>{desc}</p><a className="text-link" href={url} target="_blank" rel="noreferrer">Open resource <ExternalLink size={16} /></a></Glass>)}</div></div></section>;
+}
+
+function About() {
+  return <section id="about" className="section-pad"><div className="container"><Title eyebrow="About" title="About Zero and its founder" subtitle="Zero is a scientific platform first; the founder story documents the journey behind it." /><div className="grid-2"><Glass><h3>About Zero</h3><p>Zero is a dark-space scientific platform designed to explore physics, astronomy, astrophysics, space science, cosmology, and quantum physics through research-based content, AI-assisted tools, and curated scientific resources.</p><p>The platform aims to help students, researchers, and science enthusiasts ask scientific questions, discover recent research, summarize academic work, and follow trusted scientific knowledge in a clear and organized way.</p></Glass><Glass><h3>About the Founder</h3><p className="cyan">[Your Professional Name]</p><p className="muted">Founder & Science Curator of Zero</p><p>A science student passionate about physics, space science, astronomy, and scientific research. Through Zero, he aims to build a reliable scientific space where people can explore complex scientific topics, access research, and connect with credible scientific knowledge.</p></Glass></div><div className="grid-3 small-cards"><Glass><h4>Scientific Journey</h4><p>Timeline for courses, events, projects, publications, and scientific activities.</p></Glass><Glass><h4>Projects & Work</h4><p>A place to document science projects, presentations, posts, and public contributions.</p></Glass><Glass><h4>Featured Posts</h4><p>Embedded posts when supported, or summary cards with original links when embed is unavailable.</p></Glass></div></div></section>;
+}
+
+function Contact() {
+  return <section id="contact" className="section-pad"><div className="container narrow"><Title eyebrow="Contact" title="Connect with Zero" subtitle="Add your social accounts, professional links, and contact information here." /><Glass><div className="social-grid">{[[Linkedin,"LinkedIn","#"],[Github,"GitHub","#"],[Mail,"Email","mailto:your.email@example.com"],[Globe2,"Website","#"]].map(([Icon,label,url])=><a key={label} href={url}><Icon size={20} />{label}</a>)}</div></Glass></div></section>;
+}
+
+function App() {
+  return <main><Stars /><Header /><Home /><ZeroAI /><Explorer /><Articles /><Research /><Resources /><About /><Contact /><footer>© 2026 Zero. Exploring science from the ground up.</footer></main>;
+}
+
+createRoot(document.getElementById("root")).render(<App />);
